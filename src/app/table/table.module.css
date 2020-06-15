@@ -1,0 +1,13 @@
+.header {
+    background-color: cornflowerblue;
+    color: white !important;
+    font-weight: bold !important;
+}
+
+.row:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.th {
+    font-weight: bold !important;
+}
