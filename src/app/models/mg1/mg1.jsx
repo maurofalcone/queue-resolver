@@ -4,14 +4,19 @@ import Table from '../../table';
 import { TIME } from '../../../helpers/enums';
 import React, { useState } from 'react';
 import timeConverter from '../../../helpers/time-converter';
+import Warning from '../../shared/warning';
 
 const MG1 = () => {
+  const [warning, setWarning] = useState({
+    text: '',
+    type: '',
+  });
   const [lambdaComboValue, setLambdaComboValue] = useState(TIME.Hours);
   const [muComboValue, setMuComboValue] = useState(TIME.Hours);
   const [sigmaComboValue, setSigmaComboValue] = useState(TIME.Hours);
-  const [lambdaValue, setLambdaInputValue] = useState(20);
-  const [muValue, setMuInputValue] = useState(60);
-  const [sigmaValue, setSigmaInputValue] = useState(undefined);
+  const [lambdaValue, setLambdaInputValue] = useState();
+  const [muValue, setMuInputValue] = useState();
+  const [sigmaValue, setSigmaInputValue] = useState();
   const [result, setResult] = useState({
     P0: {
       percentage: '-',
@@ -68,8 +73,27 @@ const MG1 = () => {
     ))
   )
 
+  const handleClose = () => {
+    setWarning({
+      text: '',
+      type: '',
+    })
+  }
+
+  const resetValues = () => {
+    setMuInputValue('');
+    setSigmaInputValue('');
+    setLambdaInputValue('');
+  };
+
   const calculateResults = (e) => {
     e.preventDefault();
+    if (!lambdaValue || !muValue || !sigmaValue) {
+      return setWarning({
+        text: 'You must complete all fields',
+        type: 'warning',
+      });
+    }
     let lambdaH;
     let muH;
     let sigmaH;
@@ -107,6 +131,14 @@ const MG1 = () => {
         break;
     }
     const P = (lambdaH / muH);
+    if (P >= 1) {
+      setWarning({
+        text: 'System Collapsed',
+        type: 'error',
+      });
+      resetValues();
+      return;
+    }
     const P0 = (1 - (lambdaH / muH));
     const aux1 = (Math.pow(lambdaH, 2) * Math.pow(sigmaH, 2)) + Math.pow(P, 2);
     const aux2 = (2 * (1 - P));
@@ -138,78 +170,85 @@ const MG1 = () => {
         percentage: P,
       }
     }
-    setResult(result);
+    setWarning({
+      text: 'Success',
+      type: 'success',
+    });
+    return setResult(result);
   }
 
   return (
-    <div className={css.container}>
-      <div className={css.inputsContainer}>
-        <InputLabel>Data</InputLabel>
-        <div className={css.group}>
-          <InputLabel>λ</InputLabel>
-          <TextField
-            onChange={(e) => handleChange(e, 'inputLambda')}
-            value={lambdaValue}
-          />
-          <InputLabel>Time</InputLabel>
-          <Select
-            className={css.select}
-            value={lambdaComboValue}
-            onChange={(e) => handleChange(e, 'comboLambda')}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            {renderOptions()}
-          </Select>
+    <>
+      <Warning onClose={handleClose} show={!!warning.text} type={warning.type} text={warning.text}/>
+      <div className={css.container}>
+        <div className={css.inputsContainer}>
+          <InputLabel>Data</InputLabel>
+          <div className={css.group}>
+            <InputLabel>λ</InputLabel>
+            <TextField
+              onChange={(e) => handleChange(e, 'inputLambda')}
+              value={lambdaValue}
+            />
+            <InputLabel>Time</InputLabel>
+            <Select
+              className={css.select}
+              value={lambdaComboValue}
+              onChange={(e) => handleChange(e, 'comboLambda')}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {renderOptions()}
+            </Select>
+          </div>
+          <br/>
+          <div className={css.group}>
+            <InputLabel>µ</InputLabel>
+            <TextField
+              onChange={(e) => handleChange(e, 'inputMu')}
+              value={muValue}
+            />
+            <InputLabel>Time</InputLabel>
+            <Select
+              className={css.select}
+              value={muComboValue}
+              onChange={(e) => handleChange(e, 'comboMu')}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {renderOptions()}
+            </Select>
+          </div>
+          <br/>
+          <div className={css.group}>
+            <InputLabel>σ</InputLabel>
+            <TextField
+              onChange={(e) => handleChange(e, 'inputSigma')}
+              value={sigmaValue}
+              required
+            />
+            <InputLabel>Time</InputLabel>
+            <Select
+              name={'Sigma'}
+              className={css.select}
+              value={sigmaComboValue}
+              onChange={(e) => handleChange(e, 'comboSigma')}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {renderOptions()}
+            </Select>
+          </div>
+          <Button className={css.button} onClick={calculateResults}>Calculate</Button>
         </div>
-        <br/>
-        <div className={css.group}>
-          <InputLabel>µ</InputLabel>
-          <TextField
-            onChange={(e) => handleChange(e, 'inputMu')}
-            value={muValue}
-          />
-          <InputLabel>Time</InputLabel>
-          <Select
-            className={css.select}
-            value={muComboValue}
-            onChange={(e) => handleChange(e, 'comboMu')}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            {renderOptions()}
-          </Select>
+        <div className={css.results}>
+          <InputLabel className={css.resultsLabel}>Results</InputLabel>
+          <Table rows={Object.entries(result)} />
         </div>
-        <br/>
-        <div className={css.group}>
-          <InputLabel>σ</InputLabel>
-          <TextField
-            onChange={(e) => handleChange(e, 'inputSigma')}
-            value={sigmaValue}
-            required
-          />
-          <InputLabel>Time</InputLabel>
-          <Select
-            name={'Sigma'}
-            className={css.select}
-            value={sigmaComboValue}
-            onChange={(e) => handleChange(e, 'comboSigma')}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            {renderOptions()}
-          </Select>
-        </div>
-        <Button className={css.button} onClick={calculateResults}>Calculate</Button>
       </div>
-      <div className={css.results}>
-        <InputLabel className={css.resultsLabel}>Results</InputLabel>
-        <Table rows={Object.entries(result)} />
-      </div>
-    </div>
+    </>
   );
 }
 
