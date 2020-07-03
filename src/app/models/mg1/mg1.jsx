@@ -139,7 +139,7 @@ const MG1 = () => {
       resetValues();
       return;
     }
-    const P0 = (1 - (lambdaH / muH));
+    const P0 = (1 - P);
     const aux1 = (Math.pow(lambdaH, 2) * Math.pow(sigmaH, 2)) + Math.pow(P, 2);
     const aux2 = (2 * (1 - P));
     const Lq = (aux1 / aux2);
@@ -179,7 +179,7 @@ const MG1 = () => {
 
   return (
     <>
-      <Warning onClose={handleClose} show={!!warning.text} type={warning.type} text={warning.text}/>
+      <Warning onClose={handleClose} show={!!warning.text} type={warning.type} text={warning.text} />
       <div className={css.container}>
         <div className={css.inputsContainer}>
           <InputLabel>Data</InputLabel>
@@ -201,7 +201,7 @@ const MG1 = () => {
               {renderOptions()}
             </Select>
           </div>
-          <br/>
+          <br />
           <div className={css.group}>
             <InputLabel>µ</InputLabel>
             <TextField
@@ -220,7 +220,7 @@ const MG1 = () => {
               {renderOptions()}
             </Select>
           </div>
-          <br/>
+          <br />
           <div className={css.group}>
             <InputLabel>σ</InputLabel>
             <TextField
